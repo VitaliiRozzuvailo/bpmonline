@@ -251,6 +251,11 @@ define("OrderPageV2", ["BusinessRuleModule", "ConfigurationConstants", "ServiceH
                     var contactName = this.get("Contact").displayValue;
                     //split and get firstname and last name
                     var fio = contactName.split(" ");
+                    if (fio.length < 1) {
+                        var message = "Error. Bad Name of Contact.";
+                        this.showInformationDialog(message);
+                        return;
+                    }
                     var fName = fio[1], lName = fio[0];
 
                     var paymentMethod = (this.get("SxPaymentType") === "c2d88243-685d-4e8b-a533-73f4Cc8e869b" ? "NonCash" : "Cash");
