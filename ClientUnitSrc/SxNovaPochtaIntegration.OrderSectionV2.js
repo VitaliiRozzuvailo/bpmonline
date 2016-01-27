@@ -14,7 +14,7 @@ define("OrderSectionV2", function () {
                 if (!mail) {
                     var activeRow = this.get("ActiveRow");
                     if (activeRow) {
-                        var m = this.get("GridData").get(activeRow).get("SxMail");
+                        var m = this.get("GridData").get(activeRow).get("SxMail") || {};
                         return (m || m.value === "ec82cf93-0994-4eb0-82a7-b991c55d5dde") ? true : false;
                     }
                     return false;
