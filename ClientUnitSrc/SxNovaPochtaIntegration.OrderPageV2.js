@@ -150,6 +150,7 @@ define("OrderPageV2", ["BusinessRuleModule", "ConfigurationConstants", "ServiceH
                         this.set("isNovaPochta", false);
                 },
 
+                //update mail in order after add address delivery
                 updateSxMailInOrder: function () {
                     var id = this.get("Id");
                     if (id === undefined) return;
@@ -244,6 +245,7 @@ define("OrderPageV2", ["BusinessRuleModule", "ConfigurationConstants", "ServiceH
                     }, this);
                 },
 
+                //create request and send it to service
                 createRequestToNP: function (weight, volume) {
                     var id = this.get("Id");  // 
                     var contactName = this.get("Contact").displayValue;
@@ -352,6 +354,8 @@ define("OrderPageV2", ["BusinessRuleModule", "ConfigurationConstants", "ServiceH
                             }, serviceData, this);
                     }, this);
                 },
+
+                //get now date in format string
                 getDateNowToString: function () {
                     function padStr(i) {
                         return (i < 10) ? "0" + i : "" + i;
@@ -361,6 +365,7 @@ define("OrderPageV2", ["BusinessRuleModule", "ConfigurationConstants", "ServiceH
                     return dateStr;
                 },
 
+                //get service type by Nova Pochta
                 getServiceType: function (type) {
                     switch (type) {
                         case "1d9a0bb2-a377-458d-a970-f4239f57dbd7": return "DoorsDoors";
@@ -370,6 +375,7 @@ define("OrderPageV2", ["BusinessRuleModule", "ConfigurationConstants", "ServiceH
                         default: return "";
                     }
                 },
+
                 //get xml with string
                 stringToXML: function (oString) {
                     //code for IE
@@ -379,6 +385,7 @@ define("OrderPageV2", ["BusinessRuleModule", "ConfigurationConstants", "ServiceH
                     else
                         return (new DOMParser()).parseFromString(oString, "text/xml");
                 },
+
                 //parse response by service
                 parseXMLfromNP: function (xml) {
                     var success = xml.getElementsByTagName("success")[0].childNodes[0].nodeValue;
