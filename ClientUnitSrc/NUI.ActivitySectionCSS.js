@@ -1,0 +1,5 @@
+define("ActivitySectionCSS", [],
+	function() {
+		return {
+		};
+	});

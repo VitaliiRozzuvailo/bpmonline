@@ -1,0 +1,3 @@
+define("LeadQualificationModuleStyles", function() {
+	return {};
+});
