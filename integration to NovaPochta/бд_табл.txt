@@ -1,0 +1,14 @@
+таблица Order:
+	- SxMail
+
+таблица SxAddressDelivery:
+	- SxFlat
+	- SxBuild
+	- SxStreet
+	- SxIsAddress
+	- SxIsRedelivery
+	- SxCountOfPlacesNP
+	- SxDeliveryTypeNP
+	- SxAddressOfDepartament
+	- SxDeliveryState
+	
