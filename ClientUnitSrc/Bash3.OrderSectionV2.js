@@ -1,9 +1,9 @@
-define("OrderSectionV2", [], function() {
+define("OrderSectionV2", [], function () {
     return {
         entitySchemaName: "Order",
         attributes: {},
         methods: {
-            getSectionActions: function() {
+            getSectionActions: function () {
                 var actionMenuItems = this.callParent(arguments),
                     PrintFormItems = this.Ext.create("Terrasoft.BaseViewModelCollection"),
                     PrintForm = this.getButtonMenuItem({
@@ -12,38 +12,38 @@ define("OrderSectionV2", [], function() {
                     });
                 PrintFormItems.addItem(this.getButtonMenuItem({
                     Caption: "Почтовый перевод",
-                    Click: {"bindTo": "printFirstBlank"},
+                    Click: { "bindTo": "printFirstBlank" },
                     "Enabled": true
                 }));
                 PrintFormItems.addItem(this.getButtonMenuItem({
                     Caption: "Опись",
-                    Click: {"bindTo": "printSecondBlank"},
+                    Click: { "bindTo": "printSecondBlank" },
                     "Enabled": true
                 }));
                 PrintFormItems.addItem(this.getButtonMenuItem({
                     Caption: "Накладная ф.16",
-                    Click: {"bindTo": "printThirdBlank"},
+                    Click: { "bindTo": "printThirdBlank" },
                     "Enabled": true
                 }));
                 var importButton = this.getButtonMenuItem({
                     Caption: "Импорт",
-                    Click: {"bindTo": "import"},
+                    Click: { "bindTo": "import" },
                     "Enabled": true
                 });
                 actionMenuItems.addItem(PrintForm);
                 actionMenuItems.addItem(importButton);
                 return actionMenuItems;
             },
-            import: function(){
+            import: function () {
                 var url = this.Terrasoft.workspaceBaseUrl + "/ViewPage.aspx?Id=ec323cf0-8201-4519-b50f-469b8ac34b78";
                 window.open(url, "_blank", "height=300,width=500");
             },
-            printFirstBlank: function(){
+            printFirstBlank: function () {
                 this.showBodyMask();
                 var filters = this.getReportFilters();
                 var reportParameters;
                 if (filters instanceof Terrasoft.FilterGroup) {
-                    reportParameters = {Filters: filters.serialize()};
+                    reportParameters = { Filters: filters.serialize() };
                 } else {
                     reportParameters = filters;
                 }
@@ -73,29 +73,29 @@ define("OrderSectionV2", [], function() {
                     delete data.recordId;
                     data.recordIds = selectedRows;
                     serviceConfig.methodName = "CreateReportsList";
-                    callback = function(response) {
+                    callback = function (response) {
                         var keys = response.CreateReportsListResult;
                         for (var i = 0; i < keys.length; i++) {
                             this.downloadReport("capt", keys[i]);
                         }
                     };
                 } else {
-                    callback = function(response) {
+                    callback = function (response) {
                         var key = response.CreateReportResult;
                         this.downloadReport("capt", key);
                     };
                 }
-                this.callService(serviceConfig, function(response) {
+                this.callService(serviceConfig, function (response) {
                     this.hideBodyMask();
                     callback.call(this, response);
                 }, this);
             },
-            printSecondBlank: function(){
+            printSecondBlank: function () {
                 this.showBodyMask();
                 var filters = this.getReportFilters();
                 var reportParameters;
                 if (filters instanceof Terrasoft.FilterGroup) {
-                    reportParameters = {Filters: filters.serialize()};
+                    reportParameters = { Filters: filters.serialize() };
                 } else {
                     reportParameters = filters;
                 }
@@ -125,29 +125,29 @@ define("OrderSectionV2", [], function() {
                     delete data.recordId;
                     data.recordIds = selectedRows;
                     serviceConfig.methodName = "CreateReportsList";
-                    callback = function(response) {
+                    callback = function (response) {
                         var keys = response.CreateReportsListResult;
                         for (var i = 0; i < keys.length; i++) {
                             this.downloadReport("capt", keys[i]);
                         }
                     };
                 } else {
-                    callback = function(response) {
+                    callback = function (response) {
                         var key = response.CreateReportResult;
                         this.downloadReport("capt", key);
                     };
                 }
-                this.callService(serviceConfig, function(response) {
+                this.callService(serviceConfig, function (response) {
                     this.hideBodyMask();
                     callback.call(this, response);
                 }, this);
             },
-            printThirdBlank: function(){
+            printThirdBlank: function () {
                 this.showBodyMask();
                 var filters = this.getReportFilters();
                 var reportParameters;
                 if (filters instanceof Terrasoft.FilterGroup) {
-                    reportParameters = {Filters: filters.serialize()};
+                    reportParameters = { Filters: filters.serialize() };
                 } else {
                     reportParameters = filters;
                 }
@@ -177,24 +177,24 @@ define("OrderSectionV2", [], function() {
                     delete data.recordId;
                     data.recordIds = selectedRows;
                     serviceConfig.methodName = "CreateReportsList";
-                    callback = function(response) {
+                    callback = function (response) {
                         var keys = response.CreateReportsListResult;
                         for (var i = 0; i < keys.length; i++) {
                             this.downloadReport("capt", keys[i]);
                         }
                     };
                 } else {
-                    callback = function(response) {
+                    callback = function (response) {
                         var key = response.CreateReportResult;
                         this.downloadReport("capt", key);
                     };
                 }
-                this.callService(serviceConfig, function(response) {
+                this.callService(serviceConfig, function (response) {
                     this.hideBodyMask();
                     callback.call(this, response);
                 }, this);
             },
-            downloadReport: function(caption, key) {
+            downloadReport: function (caption, key) {
                 var report = document.createElement("a");
                 report.href = "../rest/ReportService/GetReportFile/" + key;
                 report.download = caption;

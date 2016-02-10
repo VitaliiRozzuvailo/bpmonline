@@ -14,6 +14,10 @@ define("OrderPageV2", ["BusinessRuleModule", "ConfigurationConstants", "ServiceH
                 "UpdateTTN": {
                     mode: Terrasoft.MessageMode.PTP,
                     direction: Terrasoft.MessageDirectionType.SUBSCRIBE
+                },
+                "UpdateRecordInGrid": {
+                    mode: Terrasoft.MessageMode.PTP,
+                    direction: Terrasoft.MessageDirectionType.PUBLISH
                 }
             },
             attributes: {
@@ -21,44 +25,15 @@ define("OrderPageV2", ["BusinessRuleModule", "ConfigurationConstants", "ServiceH
                     dataValueType: Terrasoft.DataValueType.BOOLEAN,
                     type: Terrasoft.ViewModelColumnType.VIRTUAL_COLUMN,
                     value: false
+                },
+                "isMailCheck": {
+                    dataValueType: Terrasoft.DataValueType.BOOLEAN,
+                    type: Terrasoft.ViewModelColumnType.VIRTUAL_COLUMN,
+                    value: true
                 }
             },
             rules: {
-                "SxSendingDate": {
-                    BindParametrVisibileSxSendingDateBySxMail: {
-                        ruleType: BusinessRuleModule.enums.RuleType.BINDPARAMETER,
-                        property: BusinessRuleModule.enums.Property.VISIBLE,
-                        conditions: [{
-                            leftExpression: {
-                                type: BusinessRuleModule.enums.ValueType.ATTRIBUTE,
-                                attribute: "SxMail"
-                            },
-                            comparisonType: Terrasoft.ComparisonType.EQUAL,
-                            rightExpression: {
-                                type: BusinessRuleModule.enums.ValueType.CONSTANT,
-                                value: "ec82cf93-0994-4eb0-82a7-b991c55d5dde"
-                            }
-                        }]
-                    }
-                },
                 "SxDeliveryDate": {
-                    BindParametrVisibileSxDeliveryDateBySxMail: {
-                        ruleType: BusinessRuleModule.enums.RuleType.BINDPARAMETER,
-                        property: BusinessRuleModule.enums.Property.VISIBLE,
-                        conditions: [{
-                            leftExpression: {
-                                type: BusinessRuleModule.enums.ValueType.ATTRIBUTE,
-                                attribute: "SxMail"
-                            },
-                            comparisonType: Terrasoft.ComparisonType.EQUAL,
-                            rightExpression: {
-                                type: BusinessRuleModule.enums.ValueType.CONSTANT,
-                                value: "ec82cf93-0994-4eb0-82a7-b991c55d5dde"
-                            }
-                        }]
-                    }
-                },
-                "SxTakingDate": {
                     BindParametrVisibileSxReceivingDateBySxMail: {
                         ruleType: BusinessRuleModule.enums.RuleType.BINDPARAMETER,
                         property: BusinessRuleModule.enums.Property.VISIBLE,
@@ -115,39 +90,44 @@ define("OrderPageV2", ["BusinessRuleModule", "ConfigurationConstants", "ServiceH
                 init: function () {
                     this.callParent(arguments);
 
+                    this.publishPropertyValueToSection("CurrentSxMail", undefined);
+
                     this.sandbox.subscribe("SetNovaPochta", function () {
+                        //this.set("isMailCheck", false);
                         this.set("isNovaPochta", true);
+                        this.publishPropertyValueToSection("CurrentSxMail", true);
                         this.updateSxMailInOrder();
                     }, this);
 
                     this.sandbox.subscribe("SetNoNovaPochtaMail", function () {
+                        //this.set("isMailCheck", false);
                         this.set("isNovaPochta", false);
+                        this.publishPropertyValueToSection("CurrentSxMail", false);
                         this.updateSxMailInOrder();
                     }, this);
 
                     this.sandbox.subscribe("UpdateTTN", function () {
                         this.onUpdateTTNClick();
                     }, this);
-
-                    this.on("change:SxMail", function (model, value) {
-                        this.publishPropertyValueToSection("CurrentSxMail", value);
-                    }, this);
                 },
 
                 onEntityInitialized: function () {
                     this.callParent(arguments);
-                    this.checkNovaPochtaSelected();
-
                     this.checkStatusNovaPochta();
+                    //if (this.get("isMailCheck"))
+                        this.checkNovaPochtaSelected();
                 },
 
                 checkNovaPochtaSelected: function () {
+
                     var mail = this.get("SxMail") || {};
                     //Nova pochta
-                    if (mail.value === "ec82cf93-0994-4eb0-82a7-b991c55d5dde")
+                    if (mail.value === "ec82cf93-0994-4eb0-82a7-b991c55d5dde") {
                         this.set("isNovaPochta", true);
-                    else
+                    }
+                    else {
                         this.set("isNovaPochta", false);
+                    }
                 },
 
                 //update mail in order after add address delivery
@@ -156,26 +136,30 @@ define("OrderPageV2", ["BusinessRuleModule", "ConfigurationConstants", "ServiceH
                     if (id === undefined) return;
                     var bq = Ext.create("Terrasoft.BatchQuery");
                     var select = Ext.create("Terrasoft.EntitySchemaQuery", { rootSchemaName: "SxAddressDeliveryType" });
-                    select.addColumn("SxMail.Id", "SxMailId");
+                    //select.addColumn("SxMail.Id", "SxMailId");
                     select.addColumn("SxMail", "SxMail");
                     select.filters.addItem(select.createColumnFilterWithParameter(Terrasoft.ComparisonType.EQUAL, "SxOrder.Id", id));
                     bq.add(select);
                     var th = this;
                     bq.execute(function (result) {
-                        debugger
                         if (!result.success) return;
                         var mail = result.queryResults[0].rows;
                         if (mail.length < 1) return;
 
                         th.set("SxMail", mail[0].SxMail);
+                        /*th.save();
+                       */
 
+                        
                         var update = Ext.create("Terrasoft.UpdateQuery", {
                             rootSchemaName: "Order"
                         });
-                        debugger
                         update.setParameterValue("SxMail", mail[0].SxMailId, Terrasoft.DataValueType.GUID);
                         update.filters.addItem(Terrasoft.createColumnFilterWithParameter(Terrasoft.ComparisonType.EQUAL, "Id", id));
-                        update.execute();
+                        update.execute(function (result) {
+                            if (!result.success) return;
+                            th.sandbox.publish("UpdateRecordInGrid");
+                        });
                     });
                 },
 
@@ -205,8 +189,9 @@ define("OrderPageV2", ["BusinessRuleModule", "ConfigurationConstants", "ServiceH
                         //get weight and volume by products
                         var bq = Ext.create("Terrasoft.BatchQuery");
                         var select = Ext.create("Terrasoft.EntitySchemaQuery", { rootSchemaName: "SpecificationInProduct" });
-                        select.addColumn("IntValue", "Weight"); // вес
-                        select.addColumn("FloatValue", "Volume");// объем
+                        select.addColumn("FloatValue", "WeightF"); // вес
+                        select.addColumn("IntValue", "WeightI"); // вес
+                        //select.addColumn("FloatValue", "Volume");// объем
                         select.addColumn("Product.Id", "ProductId"); // ghjlecr
                         //filter by products - get 
                         var productCollection = [];
@@ -218,8 +203,9 @@ define("OrderPageV2", ["BusinessRuleModule", "ConfigurationConstants", "ServiceH
 
                             productCollection.push(products[i].ProductId);
                         }
-
                         select.filters.addItem(select.createColumnInFilterWithParameters("Product.Id", productCollection));
+                        //вес04649E1D-186B-4E46-A0E7-AED342D3EB3C
+                        select.filters.addItem(select.createColumnFilterWithParameter(Terrasoft.ComparisonType.EQUAL, "Specification.Id", "04649e1d-186b-4e46-a0e7-aed342d3eb3c"));
                         bq.add(select);
 
                         bq.execute(function (result) {
@@ -233,10 +219,10 @@ define("OrderPageV2", ["BusinessRuleModule", "ConfigurationConstants", "ServiceH
                                 for (var i = 0; i < collection.length; i++) {
                                     //get values by product
                                     if (products[j].ProductId === collection[i].ProductId) {
-                                        var w = collection[i].Weight;
-                                        var v = collection[i].Volume;
+                                        var w = collection[i].WeightF + collection[i].WeightI;
+                                        //var v = collection[i].Volume;
                                         weight += w * products[j].Quantity;
-                                        volume += v * products[j].Quantity;
+                                        //volume += v * products[j].Quantity;
                                     }
                                 }
                             };
@@ -274,7 +260,7 @@ define("OrderPageV2", ["BusinessRuleModule", "ConfigurationConstants", "ServiceH
                     var select = Ext.create("Terrasoft.EntitySchemaQuery", { rootSchemaName: "SxAddressDeliveryType" });
                     select.addColumn("City.Name", "City");
                     select.addColumn("SxCountOfPlacesNP.Name", "SxCountOfPlacesNP");
-                    select.addColumn("SxDeliveryTypeNP.Id", "SxDeliveryTypeNP");
+                    select.addColumn("SxDeliveryTypeNP.Name", "SxDeliveryTypeNP");
                     select.addColumn("SxNumOfDepartament.Name", "SxNumOfDepartament");
                     select.addColumn("SxIsRedelivery");
                     select.addColumn("SxIsAddress");
@@ -373,10 +359,10 @@ define("OrderPageV2", ["BusinessRuleModule", "ConfigurationConstants", "ServiceH
                 //get service type by Nova Pochta
                 getServiceType: function (type) {
                     switch (type) {
-                        case "1d9a0bb2-a377-458d-a970-f4239f57dbd7": return "DoorsDoors";
-                        case "e2cb4878-c793-4507-855e-247e03a9b446": return "DoorsWarehouse";
-                        case "34c3e899-7e57-473b-a4b0-2cb3e1228547": return "WarehouseWarehouse";
-                        case "0532d458-ad0e-4eee-8a48-1ca45852f0ab": return "WarehouseDoors";
+                        case "Двери-Двери": return "DoorsDoors";
+                        case "Двери-Склад": return "DoorsWarehouse";
+                        case "Склад-Склад": return "WarehouseWarehouse";
+                        case "Склад-Двери": return "WarehouseDoors";
                         default: return "";
                     }
                 },
@@ -514,7 +500,7 @@ define("OrderPageV2", ["BusinessRuleModule", "ConfigurationConstants", "ServiceH
                      "name": "SxDeliveryDate",
                      "values": {
                          "bindTo": "SxDeliveryDate",
-                         "layout": { "column": 0, "row": 4, "colSpan": 12 },
+                         "layout": { "column": 0, "row": 6, "colSpan": 12 },
                          //"enabled": false
                      }
                  },
@@ -526,7 +512,7 @@ define("OrderPageV2", ["BusinessRuleModule", "ConfigurationConstants", "ServiceH
                      "name": "SxTTNReceivingMoney",
                      "values": {
                          "bindTo": "SxTTNReceivingMoney",
-                         "layout": { "column": 0, "row": 6, "colSpan": 12 },
+                         "layout": { "column": 0, "row": 7, "colSpan": 12 }
                          //"enabled": false
                      }
                  },

@@ -73,12 +73,12 @@ define("OrderPageV2", ['OrderConfigurationConstants', "MoneyModule"],
                         }
                         this.adressList.hide();
                     }, this);
-                    this.on("destroy", function() {
+                    /*this.on("destroy", function() {
                         Ext.getBody().removeListener('mousedown', this.onMouseDownCollapse, this);
                         this.adressList.destroy();
                     }, this);
                     Ext.getBody().on('mousedown', this.onMouseDownCollapse, this);
-                    Ext.ComponentMgr.all.map.OrderPageV2AddressSuggestTextEdit.on('keyup', this.suggest, this);
+                    Ext.ComponentMgr.all.map.OrderPageV2AddressSuggestTextEdit.on('keyup', this.suggest, this);*/
                     this.set("AddressListInited", true);
                 },
                 loadLookups: function(city, region, city_with_type, region_with_type) {
@@ -222,6 +222,7 @@ define("OrderPageV2", ['OrderConfigurationConstants', "MoneyModule"],
                             scope: this
                         });
                 },
+
                 onMouseDownCollapse: function(e) {
                     if(this.adressList.visible) {
                         var isInWrap = e.within(Ext.ComponentMgr.all.map.OrderPageV2AddressSuggestTextEdit.getWrapEl());
@@ -418,7 +419,7 @@ define("OrderPageV2", ['OrderConfigurationConstants', "MoneyModule"],
                 onEntityInitialized: function(){
                     this.callParent(arguments);
                     this.setPrimaryValues();
-                    this.initAddressList();
+                    //this.initAddressList();
                     this.refreshControlsState();
                     if(this.get("IsNeedReload")){
                         //debugger;

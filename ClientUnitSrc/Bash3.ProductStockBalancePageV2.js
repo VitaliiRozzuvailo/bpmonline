@@ -1,5 +1,5 @@
 define("ProductStockBalancePageV2", ["BaseFiltersGenerateModule", "BusinessRuleModule", "Warehouse"],
-    function(BaseFiltersGenerateModule, BusinessRuleModule, Warehouse) {
+    function (BaseFiltersGenerateModule, BusinessRuleModule, Warehouse) {
         return {
             entitySchemaName: "ProductStockBalance",
             attributes: {
@@ -14,7 +14,7 @@ define("ProductStockBalancePageV2", ["BaseFiltersGenerateModule", "BusinessRuleM
                     caption: {
                         bindTo: "Resources.Strings.SxOwnerCaption"
                     },
-                    lookupListConfig: {filter: BaseFiltersGenerateModule.OwnerFilter},
+                    lookupListConfig: { filter: BaseFiltersGenerateModule.OwnerFilter },
                     referenceSchemaName: 'Contact',
                     dependencies: [
                         {
@@ -31,13 +31,13 @@ define("ProductStockBalancePageV2", ["BaseFiltersGenerateModule", "BusinessRuleM
                 },
                 setOwner: function () {
                     var warehouse = this.get("Warehouse") || {},
-                        owner = warehouse.SxOwner? warehouse.SxOwner: null;
+                        owner = warehouse.SxOwner ? warehouse.SxOwner : null;
                     this.set("SxOwner", owner);
                 },
                 saveOwner: function (callback, scope) {
                     var warehouse = this.get("Warehouse") || {},
                         owner = this.get("SxOwner") || {},
-                        warehouseOwner = warehouse.SxOwner? warehouse.SxOwner: {},
+                        warehouseOwner = warehouse.SxOwner ? warehouse.SxOwner : {},
                         result = {
                             success: true
                         };

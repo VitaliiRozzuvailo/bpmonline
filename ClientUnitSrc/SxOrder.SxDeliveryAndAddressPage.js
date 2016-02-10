@@ -106,14 +106,18 @@ define("SxDeliveryAndAddressPage", ["BusinessRuleModule"], function (BusinessRul
                 }]
             },
             "SxNumOfDepartament": {
-                "lookupListConfig": {
+                lookupListConfig: {
                     "filter": function () {
                         debugger
                         //TODO
                         var city = !Ext.isEmpty(this.get('City')) ? this.get('City').value : '00000000-0000-0000-0000-000000000000';
                         return Terrasoft.createColumnFilterWithParameter(Terrasoft.ComparisonType.EQUAL, 'SxCity', city);
                     }
-                }
+                },
+                dependencies: [{
+                    columns: ["SxMail"],
+                    methodName: "resetSxNumOfDepartament"
+                }]
             },
             "SxAddressOfDepartament": {
                 dependencies: [{
@@ -156,6 +160,11 @@ define("SxDeliveryAndAddressPage", ["BusinessRuleModule"], function (BusinessRul
                 }
                 this.set("SxAddressOfDepartament", "");
             },
+
+            resetSxNumOfDepartament: function () {
+                this.set("SxNumOfDepartament", "");
+            },
+
             resetMail: function () {
                 if (this.isCountryUkraine()) return;
                 this.set("SxMail", "");

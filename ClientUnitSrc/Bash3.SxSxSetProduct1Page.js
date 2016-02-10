@@ -20,6 +20,7 @@ define("SxSxSetProduct1Page", [], function () {
                             var filterGroup = Ext.create("Terrasoft.FilterGroup");
                             filterGroup.add("IsSet", Terrasoft.createColumnFilterWithParameter(Terrasoft.ComparisonType.EQUAL, "SxIsSet", "false"));
                             filterGroup.add("IsThisId", Terrasoft.createColumnFilterWithParameter(Terrasoft.ComparisonType.NOT_EQUAL, "Id", set.value));
+                            filterGroup.add("IsDelivery", Terrasoft.createColumnFilterWithParameter(Terrasoft.ComparisonType.NOT_EQUAL, "Id", "25f1f1cc-85ce-448c-b680-4d2835a18724"));
                             return filterGroup;
                         }
                     ]
@@ -69,7 +70,7 @@ define("SxSxSetProduct1Page", [], function () {
                     this.sandbox.publish("UpdateSetInProduct");
 
                 this.callParent(arguments);
-            },
+            }
         },
         rules: {}
     };
